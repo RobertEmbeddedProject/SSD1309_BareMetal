@@ -1,6 +1,7 @@
 #include "ssd1309.h"  // Include the OLED driver
 
 void app_main(void) {
+    ssd1309_reset();
     ssd1309_init();                // Initialize I2C and OLED display
     ssd1309_clear();               // Clear the local framebuffer
     ssd1309_draw_text(0, 0, "Hello");   // Draw "Hello" at top-left

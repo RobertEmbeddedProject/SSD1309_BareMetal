@@ -2,7 +2,13 @@
 #include "ssd1309.h"
 #include <string.h>
 
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+
 #define I2C_MASTER_NUM              I2C_NUM_0
+#define OLED_RESET_GPIO             GPIO_NUM_23
 #define I2C_MASTER_SCL_IO           22
 #define I2C_MASTER_SDA_IO           21
 #define I2C_MASTER_FREQ_HZ          400000
@@ -91,7 +97,22 @@ void ssd1309_draw_char(int x, int y, char c) {
     }
 }
 
+void ssd1309_reset(void)
+{
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << OLED_RESET_GPIO),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = 0,
+        .pull_down_en = 0,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
 
+    gpio_set_level(OLED_RESET_GPIO, 0);  // Reset low
+    vTaskDelay(pdMS_TO_TICKS(50));       // Hold low 50ms
+    gpio_set_level(OLED_RESET_GPIO, 1);  // Reset high
+    vTaskDelay(pdMS_TO_TICKS(50));       // Wait for OLED to boot
+}
 
 void ssd1309_draw_text(int x, int y, const char *text) {
     while (*text) {
