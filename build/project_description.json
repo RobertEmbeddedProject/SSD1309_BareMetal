@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "SSD1309_BareMetal",
-    "project_version":    "62420ce-dirty",
+    "project_version":    "62b16f6-dirty",
     "project_path":       "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal",
     "idf_path":           "C:/Users/rfink/esp/v5.5/esp-idf",
     "build_dir":          "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal/build",
@@ -715,7 +715,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__led_strip" ],
             "file": "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal/build/esp-idf/main/libmain.a",
-            "sources": [ "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal/main/main.c", "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal/main/ssd1309.c" ],
+            "sources": [ "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal/main/main.c", "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal/main/ssd1309.c", "C:/Users/rfink/OneDrive/Documentos/ESP-IDF/SSD1309_BareMetal/main/smallfont.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {

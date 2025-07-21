@@ -1,5 +1,6 @@
 #include "driver/i2c.h"
 #include "ssd1309.h"
+#include "smallfont.h"
 #include <string.h>
 
 #include "driver/gpio.h"
@@ -19,7 +20,8 @@
 
 static uint8_t oled_buffer[OLED_BUF_SIZE];
 
-static void i2c_master_init() {
+//Initialize I2C via ESP-IDFs standard HAL implementation
+void i2c_master_init() {
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = I2C_MASTER_SDA_IO,
@@ -32,8 +34,9 @@ static void i2c_master_init() {
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
 }
 
-static void ssd1309_cmd(uint8_t cmd) {
-    uint8_t buffer[2] = {0x00, cmd}; // 0x00 = command stream
+//Send a command to the Display by initializing with 0x00 (datasheet), and then whatever Hex command
+void ssd1309_cmd(uint8_t cmd) {
+    uint8_t buffer[2] = {0x00, cmd}; // 0x00 = command stream (not data)
     i2c_master_write_to_device(I2C_MASTER_NUM, OLED_ADDR, buffer, 2, 1000 / portTICK_PERIOD_MS);
 }
 
@@ -51,7 +54,7 @@ void ssd1309_init(void) {
         0xA1, // Seg remap
         0xC8, // COM scan dec
         0xDA, 0x12, // COM pins
-        0x81, 0x7F, // Contrast
+        0b10000001, 0x0F, // Contrast
         0xD9, 0xF1, // Precharge
         0xDB, 0x40, // VCOM detect
         0xA4, // Resume RAM
@@ -68,33 +71,22 @@ void ssd1309_clear(void) {
     memset(oled_buffer, 0x00, sizeof(oled_buffer));
 }
 
-static const uint8_t font8x8_basic[96][8] = {
-    // ASCII 32 = index 0
-    [0x20 - 0x20] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}, // space
-    [0x48 - 0x20] = {0x42,0x42,0x42,0x7E,0x42,0x42,0x42,0x00}, // H
-    [0x65 - 0x20] = {0x00,0x00,0x3C,0x42,0x7E,0x40,0x3C,0x00}, // e
-    [0x6C - 0x20] = {0x00,0x00,0x38,0x10,0x10,0x10,0x38,0x00}, // l
-    [0x6F - 0x20] = {0x00,0x00,0x3C,0x42,0x42,0x42,0x3C,0x00}, // o
-    [0x57 - 0x20] = {0x00,0x00,0x42,0x42,0x5A,0x66,0x42,0x00}, // W
-    [0x72 - 0x20] = {0x00,0x00,0x2C,0x30,0x20,0x20,0x70,0x00}, // r
-    [0x64 - 0x20] = {0x00,0x00,0x3C,0x40,0x40,0x40,0x3C,0x00}, // d
-};
-
 void ssd1309_draw_char(int x, int y, char c) {
     if (c < 32 || c > 127) return;
     const uint8_t *glyph = font8x8_basic[c - 32];
 
     for (int col = 0; col < 8; col++) {
-        uint8_t column_data = 0;
-        for (int row = 0; row < 8; row++) {
-            column_data |= ((glyph[row] >> col) & 0x01) << row;
-        }
-
-        int index = x + (y * 128) + col;
-        if (index < OLED_BUF_SIZE) {
-            oled_buffer[index] = column_data;
-        }
+    uint8_t column_data = 0;
+    for (int row = 0; row < 8; row++) {
+        column_data |= ((glyph[row] >> col) & 0x01) << row;
     }
+
+    // Flip horizontal draw order:
+    int index = x + (y * 128) + (7 - col);  // Flip col
+    if (index < OLED_BUF_SIZE) {
+        oled_buffer[index] = column_data;
+    }
+  }
 }
 
 void ssd1309_reset(void)
